@@ -9,6 +9,11 @@
             "name": "Fall Classic",
             "date": "2020-10-22 13:30:00",
             "numberOfPlaces": "13"
+        },
+        {
+            "name": "Music challange",
+            "date": "2025-06-21 16:30:00",
+            "numberOfPlaces": "3"
         }
     ]
 }
