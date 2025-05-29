@@ -40,27 +40,49 @@ def book(competition,club):
         flash("Something went wrong-please try again")
         return render_template('welcome.html', club=club, competitions=competitions)
 
+def refacto_booking_places(places_required, club, competition):
+    """
+    This function is a placeholder for refactoring the booking logic.
+    It should handle the logic of booking places in a more structured way.
+    """
+    if places_required <= 0:
+        return "Invalid number of places requested."
+    elif places_required > int(competition.get('numberOfPlaces')):
+        return 'Sorry, not enough places available'
+    elif places_required > int(club.get('points')):
+        return 'Sorry, you do not have enough points to book this competition'
+    else:
+        return None
+
+
 
 @app.route('/purchasePlaces',methods=['POST'])
 def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
-    places_available = int(competition.get('numberOfPlaces'))
-    club_points = int(club.get('points'))
-    if places_available < placesRequired:
-        msg = 'Sorry, not enough places available'
-        return render_template('booking.html',
-                               club=club,
-                               competition=competition,
-                               message=msg)
 
-    if club_points < placesRequired:
-        msg = 'Sorry, you do not have enough points to book this competition'
+    problem_booking = refacto_booking_places(placesRequired,
+                                             club,
+                                             competition)
+    if problem_booking:
         return render_template('booking.html',
                                club=club,
                                competition=competition,
-                               message=msg)
+                               message=problem_booking)
+    # if places_available < placesRequired:
+    #     msg = 'Sorry, not enough places available'
+    #     return render_template('booking.html',
+    #                            club=club,
+    #                            competition=competition,
+    #                            message=msg)
+
+    # if club_points < placesRequired:
+    #     msg = 'Sorry, you do not have enough points to book this competition'
+    #     return render_template('booking.html',
+    #                            club=club,
+    #                            competition=competition,
+    #                            message=msg)
 
     club['points'] = int(club.get('points')) - placesRequired
     competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
