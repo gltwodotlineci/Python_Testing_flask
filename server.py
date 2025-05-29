@@ -70,19 +70,7 @@ def purchasePlaces():
                                club=club,
                                competition=competition,
                                message=problem_booking)
-    # if places_available < placesRequired:
-    #     msg = 'Sorry, not enough places available'
-    #     return render_template('booking.html',
-    #                            club=club,
-    #                            competition=competition,
-    #                            message=msg)
 
-    # if club_points < placesRequired:
-    #     msg = 'Sorry, you do not have enough points to book this competition'
-    #     return render_template('booking.html',
-    #                            club=club,
-    #                            competition=competition,
-    #                            message=msg)
 
     club['points'] = int(club.get('points')) - placesRequired
     competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
