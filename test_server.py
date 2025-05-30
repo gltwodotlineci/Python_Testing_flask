@@ -36,7 +36,8 @@ def patch_competitions_and_clubs():
 @pytest.mark.parametrize("places, points, data_places",
                          [(5, 10, "2"),
                           (5, 10, None),
-                          (4, 10, None)])
+                          (4, 10, None),
+                          (13, 13, "13")])
 def test_purchasePlaces_cases(client_and_data,
                               patch_competitions_and_clubs,
                               places,
@@ -53,6 +54,10 @@ def test_purchasePlaces_cases(client_and_data,
     if data_places == "2":
         assert response.status_code == 200
         assert b'Great-booking complete!' in response.data
+    elif data_places == "13":
+        assert response.status_code == 200
+        assert b'Sorry, you can not book more than 12 places at once' \
+            in response.data
     elif points < int(competitions[0]['numberOfPlaces']):
         assert response.status_code == 200
         msg = b"Sorry, you do not have enough points to book this competition"

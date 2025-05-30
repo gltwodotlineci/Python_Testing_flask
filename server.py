@@ -57,10 +57,11 @@ def refacto_booking_places(places_required, club, competition):
     """
     if places_required > int(club.get('points')):
         return 'Sorry, you do not have enough points to book this competition'
+    elif places_required > 12:
+        return 'Sorry, you can not book more than 12 places at once'
     elif places_required > int(competition.get('numberOfPlaces')):
         return 'Sorry, not enough places available'
     elif places_required < 1 or not places_required.is_integer():
-        print("________________ ", places_required)
         return "Invalid number of places given."
     else:
         return None
