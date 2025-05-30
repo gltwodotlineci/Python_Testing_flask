@@ -69,9 +69,18 @@ def refacto_booking_places(places_required, club, competition):
 
 @app.route('/purchasePlaces', methods=['POST'])
 def purchasePlaces():
+    print("Page BEFORE... 3 ")
     competition = [c for c in competitions if c['name'] == request.form[
         'competition']][0]
+    print("Competition found: ", competition)
+
     club = [c for c in clubs if c['name'] == request.form['club']][0]
+    if int(competition['numberOfPlaces']) == 0:
+        flash('The competition you choosed is not avaiable anymore')
+        return render_template('welcome.html',
+                            club=club,
+                            competitions=competitions)
+
     if not request.form['places'].isdigit():
         return render_template('booking.html',
                                club=club,
