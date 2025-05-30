@@ -22,10 +22,12 @@
         <li>
             {{comp['name']}}<br />
             Date: {{comp['date']}}</br>
+            {%if comp['numberOfPlaces']|int > 0%}
             Number of Places: {{comp['numberOfPlaces']}}
-            {%if comp['numberOfPlaces']|int >0%}
             <a href="{{ url_for('book',competition=comp['name'],club=club['name']) }}">Book Places</a>
-            {%endif%}
+            {% else %}
+            <p style="color: blue;">There are no more places available for this competition</p>
+            {% endif %}
         </li>
         <hr />
         {% endfor %}
