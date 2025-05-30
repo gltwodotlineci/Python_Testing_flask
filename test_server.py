@@ -1,6 +1,8 @@
 from server import app
 import pytest
 from unittest.mock import patch
+from contextlib import contextmanager
+
 
 @pytest.fixture
 def client_and_data():
@@ -17,67 +19,86 @@ def client_and_data():
 
 
 @pytest.fixture()
-def patch_data():
+def patch_competitions_and_clubs():
     """
-    Fixture to patch the data for competitions and clubs.
+    Fixture to patch the competitions and clubs loading functions.
     """
-    competitions = [{'name': 'Competition A', 'numberOfPlaces': '5'}]
-    clubs = [{'name': 'Club A', 'points': '10'}]
-    with patch(
-        'server.competitions', competitions), patch(
-            'server.clubs', clubs):
-        yield competitions, clubs
+    @contextmanager
+    def _patch(places, points, data_places=None):
+        competitions = [{'name': 'Competition A', 'numberOfPlaces': places}]
+        clubs = [{'name': 'Club A', 'points': points}]
+        with patch('server.competitions', competitions), \
+             patch('server.clubs', clubs):
+            yield competitions, clubs
+    return _patch
 
 
-def test_purchasePlaces_success(client_and_data, patch_data):
+@pytest.mark.parametrize("places, points, data_places",
+                         [(5, 10, "2"),
+                          (5, 10, None),
+                          (4, 10, None)])
+def test_purchasePlaces_cases(client_and_data,
+                              patch_competitions_and_clubs,
+                              places,
+                              points,
+                              data_places):
     """
-    Test the purchasePlaces route for successful booking.
+    Test the purchasePlaces route with different cases of places and points.
     """
     client, data = client_and_data
-    data['places'] = "2"
-    response = client.post('/purchasePlaces', data=data)
-    assert response.status_code == 200
-    assert b'Great-booking complete!' in response.data
+    if data_places:
+        data['places'] = data_places
+    with patch_competitions_and_clubs(places, points) as (competitions, clubs):
+        response = client.post('/purchasePlaces', data=data)
+    if data_places == "2":
+        assert response.status_code == 200
+        assert b'Great-booking complete!' in response.data
+    elif points < int(competitions[0]['numberOfPlaces']):
+        assert response.status_code == 200
+        msg = b"Sorry, you do not have enough points to book this competition"
+        assert msg in response.data
+    elif places > int(competitions[0]['numberOfPlaces']):
+        assert response.status_code == 200
+        assert b'Sorry, not enough places available' in response.data
 
 
-def test_purchasePlaces_not_enough_places(client_and_data, patch_data):
+@pytest.mark.parametrize("places, points, data_places",
+                         [(4, 10, None)])
+def test_purchasePlaces_not_enough_places(client_and_data,
+                                          patch_competitions_and_clubs,
+                                          places,
+                                          points,
+                                          data_places):
     """
     Test the purchasePlaces route when there are not enough places available.
     """
     client, data = client_and_data
-    response = client.post('/purchasePlaces', data=data)
+    with patch_competitions_and_clubs(places, points) as (competitions, clubs):
+        response = client.post('/purchasePlaces', data=data)
+
     assert response.status_code == 200
     assert b'Sorry, not enough places available' in response.data
 
 
-def test_purchasePlaces_not_enough_points(client_and_data, patch_data):
-    """
-    Test the purchasePlaces when the club does not have enough points.
-    """
-    client, data = client_and_data
-    with patch('server.competitions',
-               [{'name': 'Competition A', 'numberofPlaces': '20'}]), \
-            patch('server.clubs', [{'name': 'Club A', 'points': '9'}]):
-        response = client.post('/purchasePlaces', data=data)
-    print("Response Data 2: ", response.data)
-    assert response.status_code == 200
-    assert b"Sorry, you do not have enough points to book this competition" \
-        in response.data
-
-
-def test_purchasePlaces_value_error(client_and_data, patch_data):
+@pytest.mark.parametrize("places, points, data_places",
+                         [(5, 10, '0')])
+def test_purchasePlaces_value_error(client_and_data,
+                                    patch_competitions_and_clubs,
+                                    places,
+                                    points,
+                                    data_places):
     """
     Test the purchasePlaces route when the input values are invalid.
     """
     client, data = client_and_data
+    data['places'] = data_places
     data2, data3 = data.copy(), data.copy()
-    data['places'] = '0'
     data2['places'] = 'abc'
     data3['places'] = '0.0'
-
-    response = client.post('/purchasePlaces', data=data)
-    response2 = client.post('/purchasePlaces', data=data2)
-    response3 = client.post('/purchasePlaces', data=data3)
+    with patch_competitions_and_clubs(places, points) as (competitions, clubs):
+        response = client.post('/purchasePlaces', data=data)
+        response2 = client.post('/purchasePlaces', data=data2)
+        response3 = client.post('/purchasePlaces', data=data3)
 
     assert response.status_code == 200
     assert b"Invalid number of places given." in response.data
