@@ -113,5 +113,24 @@ def test_purchasePlaces_value_error(client_and_data,
     assert b"Invalid number of places given." in response3.data
 
 
+@pytest.mark.parametrize("places, points, data_places",
+                         [(0, 10, None)])
+def test_filled_competitins(client_and_data,
+                            patch_competitions_and_clubs,
+                            places,
+                            points,
+                            data_places):
+    """
+    Test the purchasePlaces route when the competition is already filled.
+    """
+    client, data = client_and_data
+    with patch_competitions_and_clubs(0, 10) as (competitions, clubs):
+        response = client.post('/purchasePlaces', data=data)
+
+    assert response.status_code == 200
+    assert b'The competition you choosed is not avaiable anymore' \
+        in response.data
+
+
 if __name__ == '__main__':
     pytest.main()

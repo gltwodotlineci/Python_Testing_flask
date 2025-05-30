@@ -78,8 +78,8 @@ def purchasePlaces():
     if int(competition['numberOfPlaces']) == 0:
         flash('The competition you choosed is not avaiable anymore')
         return render_template('welcome.html',
-                            club=club,
-                            competitions=competitions)
+                               club=club,
+                               competitions=competitions)
 
     if not request.form['places'].isdigit():
         return render_template('booking.html',
