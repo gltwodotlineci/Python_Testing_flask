@@ -26,6 +26,11 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/clubs')
+def clubs_list():
+    return render_template('clubs.html', clubs=clubs)
+
+
 @app.route('/showSummary', methods=['POST'])
 def showSummary():
     club = [club for club in clubs if club['email'] == request.form[

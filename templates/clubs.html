@@ -5,5 +5,11 @@
     <title>GUDLFT Registration</title>
 </head>
 <body>
+    <h2>The club points balance</h2>
+    {% for club in clubs %}
+        <p>
+            <strong>{{ club['name'] }}</strong>: {{ club['points'] }} points
+        </p>
+    {% endfor %}
 </body>
 </html>
