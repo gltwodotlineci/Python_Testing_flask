@@ -33,6 +33,10 @@ def clubs_list():
 
 @app.route('/showSummary', methods=['POST'])
 def showSummary():
+    if not request.form['email'] in (x['email'] for x in clubs):
+        flash('Email not found, please try again')
+        return redirect(url_for('index'))
+
     club = [club for club in clubs if club['email'] == request.form[
         'email']][0]
     return render_template('welcome.html',
