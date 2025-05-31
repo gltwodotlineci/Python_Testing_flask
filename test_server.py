@@ -20,6 +20,17 @@ def client_and_data():
 
 
 @pytest.fixture()
+def club_email():
+    """
+    Fixture to provide user data for testing.
+    """
+    data = {'email': 'user@example.com'}
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client, data
+
+
+@pytest.fixture()
 def patch_competitions_and_clubs():
     """
     Fixture to patch the competitions and clubs loading functions.
@@ -42,6 +53,16 @@ def patch_dt_club():
         with patch('server.clubs', clubs):
             yield clubs
     return _patch
+
+
+@pytest.fixture()
+def patch_login_club():
+    @contextmanager
+    def _patch(email):
+        club_email = {'email': email}
+        with patch('server.clubs', club_email):
+            yield club_email
+        return _patch
 
 
 @pytest.mark.parametrize("places, points, data_places",
@@ -161,6 +182,32 @@ def test_clubs_list(patch_dt_club, name, points, email):
     print("Response text:", resp_text)
     assert msg1 in resp_text
     assert msg2 in resp_text
+
+
+@pytest.mark.parametrize("name, points, email",
+                         [("Club A", "30", "wrong_user@example.com"),
+                          ("Club B", "15", "user@example.com")
+                          ])
+def test_club_login(patch_dt_club, club_email, name, points, email):
+    """
+    Test the showSummary route to ensure it handles login correctly.
+    """
+    client, data = club_email
+    given_email = data['email']
+    with patch_dt_club(name, points, email):
+        response = client.post('/showSummary', data=data)
+
+    response_html = response.data.decode('utf-8')
+    resp_text = BeautifulSoup(response_html, 'html.parser').get_text()
+
+    if email != given_email:
+        msg = "You should be redirected automatically to target URL: /."
+        assert msg in resp_text
+        assert response.status_code == 302
+    else:
+        assert f"Welcome, {email}" in resp_text
+        assert f"Points available: {points}" in resp_text
+        assert response.status_code == 200
 
 
 if __name__ == '__main__':
