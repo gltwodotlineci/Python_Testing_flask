@@ -8,7 +8,8 @@
     <h2>The club points balance</h2>
     {% for club in clubs %}
         <p>
-            <strong>{{ club['name'] }}</strong>: {{ club['points'] }} points
+            <strong>{{ club['name'] }}</strong>: {{ club['points'] }} points.<br>
+            Contact us at: <b>{{ club['email'] }}</b>
         </p>
     {% endfor %}
 </body>

@@ -1,4 +1,5 @@
 from server import app
+from bs4 import BeautifulSoup
 import pytest
 from unittest.mock import patch
 from contextlib import contextmanager
@@ -30,6 +31,16 @@ def patch_competitions_and_clubs():
         with patch('server.competitions', competitions), \
              patch('server.clubs', clubs):
             yield competitions, clubs
+    return _patch
+
+
+@pytest.fixture()
+def patch_dt_club():
+    @contextmanager
+    def _patch(name, points, email):
+        clubs = [{'name': name, 'points': points, 'email': email}]
+        with patch('server.clubs', clubs):
+            yield clubs
     return _patch
 
 
@@ -124,12 +135,32 @@ def test_filled_competitins(client_and_data,
     Test the purchasePlaces route when the competition is already filled.
     """
     client, data = client_and_data
-    with patch_competitions_and_clubs(0, 10) as (competitions, clubs):
+    with patch_competitions_and_clubs(places, points):
         response = client.post('/purchasePlaces', data=data)
 
     assert response.status_code == 200
     assert b'The competition you choosed is not avaiable anymore' \
         in response.data
+
+
+@pytest.mark.parametrize("name, points, email",
+                         [("Club A", "10", "clb1@example.com"),
+                          ("Club B", "20", "clb2@example.com"),
+                          ("Club C", "30", "clb3@example.com")])
+def test_clubs_list(patch_dt_club, name, points, email):
+    """
+    Test the clubs_list route to ensure it returns the correct template.
+    """
+    with patch_dt_club(name, points, email):
+        response = app.test_client().get('/clubs')
+    response_html = response.data.decode('utf-8')
+    resp_text = BeautifulSoup(response_html, 'html.parser').get_text()
+    assert response.status_code == 200
+    msg1 = f"{name}: {points} points."
+    msg2 = f"Contact us at: {email}"
+    print("Response text:", resp_text)
+    assert msg1 in resp_text
+    assert msg2 in resp_text
 
 
 if __name__ == '__main__':
