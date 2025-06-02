@@ -24,12 +24,13 @@ login_manager.init_app(app)
 competitions = loadCompetitions()
 clubs = loadClubs()
 
+
 class ClubUser(UserMixin):
     def __init__(self, name, email, points):
         self.name = name
         self.email = email
         self.points = points
-    
+
     def get_id(self):
         return self.email
 
@@ -56,7 +57,7 @@ def clubs_list():
 @app.route('/showSummary', methods=['POST'])
 def showSummary():
     email = request.form['email']
-    if not email in (x['email'] for x in clubs):
+    if email not in (x['email'] for x in clubs):
         flash('Email not found, please try again')
         return redirect(url_for('index'))
     club = [club for club in clubs if club['email'] == request.form[

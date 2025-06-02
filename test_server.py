@@ -1,4 +1,5 @@
 from server import app
+from flask import url_for
 from bs4 import BeautifulSoup
 import pytest
 from unittest.mock import patch
@@ -56,13 +57,18 @@ def patch_dt_club():
 
 
 @pytest.fixture()
-def patch_login_club():
+def patch_logout():
+    """
+    Fixture to patch the logout
+    """
     @contextmanager
-    def _patch(email):
-        club_email = {'email': email}
-        with patch('server.clubs', club_email):
-            yield club_email
-        return _patch
+    def _patch(email, client):
+
+        with client.session_transaction() as session:
+            session['_user_id'] = email
+            yield email, client
+
+    return _patch
 
 
 @pytest.mark.parametrize("places, points, data_places",
@@ -208,6 +214,22 @@ def test_club_login(patch_dt_club, club_email, name, points, email):
         assert f"Welcome, {email}" in resp_text
         assert f"Points available: {points}" in resp_text
         assert response.status_code == 200
+
+
+@pytest.mark.parametrize("club_email, client", [(
+        "expmp1@mail.com", app.test_client())])
+def test_logout(patch_logout, club_email, client):
+    """
+    Test the logout route to ensure it redirects to the index page.
+    """
+    with patch_logout(club_email, client):
+        response = client.get('/logout')
+
+    with app.test_request_context():
+        expected_url = url_for('index', _external=True)
+
+    assert response.status_code == 302
+    assert response.location == expected_url
 
 
 if __name__ == '__main__':
