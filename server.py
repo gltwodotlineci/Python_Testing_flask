@@ -1,5 +1,7 @@
 import json
 from flask import Flask, render_template, request, redirect, flash, url_for
+from flask_login import LoginManager, UserMixin, login_user, login_required
+from flask_login import logout_user
 
 
 def loadClubs():
@@ -16,9 +18,29 @@ def loadCompetitions():
 
 app = Flask(__name__)
 app.secret_key = 'something_special'
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 competitions = loadCompetitions()
 clubs = loadClubs()
+
+class ClubUser(UserMixin):
+    def __init__(self, name, email, points):
+        self.name = name
+        self.email = email
+        self.points = points
+    
+    def get_id(self):
+        return self.email
+
+
+@login_manager.user_loader
+def load_user(email):
+    clubs = loadClubs()
+    for club in clubs:
+        if club['email'] == email:
+            return ClubUser(club['name'], club['email'], club['points'])
+    return None
 
 
 @app.route('/')
@@ -33,17 +55,28 @@ def clubs_list():
 
 @app.route('/showSummary', methods=['POST'])
 def showSummary():
-    if not request.form['email'] in (x['email'] for x in clubs):
+    email = request.form['email']
+    if not email in (x['email'] for x in clubs):
         flash('Email not found, please try again')
         return redirect(url_for('index'))
     club = [club for club in clubs if club['email'] == request.form[
         'email']][0]
+
+    club_user = ClubUser(club['name'], email, club['points'])
+    login_user(club_user)
     return render_template('welcome.html',
                            club=club,
                            competitions=competitions)
 
 
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    flash('You must be logged in to view that page.')
+    return redirect(url_for('index'))  # Redirect to home instead of login page
+
+
 @app.route('/book/<competition>/<club>')
+@login_required
 def book(competition, club):
     foundClub = [c for c in clubs if c['name'] == club][0]
     foundCompetition = [c for c in competitions if c['name'] == competition][0]
@@ -118,5 +151,7 @@ def purchasePlaces():
 
 
 @app.route('/logout')
+@login_required
 def logout():
+    logout_user()
     return redirect(url_for('index'))
