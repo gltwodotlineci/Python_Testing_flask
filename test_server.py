@@ -57,6 +57,23 @@ def patch_dt_club():
 
 
 @pytest.fixture()
+def patch_club_user():
+    """
+    Fixture to patch Clubs and Competitions.
+    """
+    @contextmanager
+    def _patch(name, points, email, name_comp, numberOfPlaces, login=False):
+        clubs = [{'name': name, 'points': points, 'email': email}]
+        competitions = [{'name': name_comp, 'numberOfPlaces': numberOfPlaces}]
+        with patch('server.competitions', competitions), \
+             patch('server.clubs', clubs):
+            # with client.session_transaction() as session:
+            #     session['_user_id'] = email
+            yield clubs, competitions
+    return _patch
+
+
+@pytest.fixture()
 def patch_logout():
     """
     Fixture to patch the logout
@@ -190,6 +207,14 @@ def test_clubs_list(patch_dt_club, name, points, email):
     assert msg2 in resp_text
 
 
+def refacto_return_index():
+    """
+    It will give re response if we redirect to index page.
+    """
+    with app.test_request_context():
+        return url_for('index', _external=True)
+
+
 @pytest.mark.parametrize("name, points, email",
                          [("Club A", "30", "wrong_user@example.com"),
                           ("Club B", "15", "user@example.com")
@@ -206,10 +231,12 @@ def test_club_login(patch_dt_club, club_email, name, points, email):
     response_html = response.data.decode('utf-8')
     resp_text = BeautifulSoup(response_html, 'html.parser').get_text()
 
+    expected_url = refacto_return_index()
+
     if email != given_email:
-        msg = "You should be redirected automatically to target URL: /."
-        assert msg in resp_text
         assert response.status_code == 302
+        assert response.location == expected_url
+
     else:
         assert f"Welcome, {email}" in resp_text
         assert f"Points available: {points}" in resp_text
@@ -225,11 +252,45 @@ def test_logout(patch_logout, club_email, client):
     with patch_logout(club_email, client):
         response = client.get('/logout')
 
-    with app.test_request_context():
-        expected_url = url_for('index', _external=True)
+    expected_url = refacto_return_index()
 
     assert response.status_code == 302
     assert response.location == expected_url
+
+
+@pytest.mark.parametrize(
+        'name, points, email, name_comp, numberOfPlaces, login',
+        [('Club A', 'clb1@example.com', "10", 'Competition A', "5", True),
+         ('Club b', 'clb2@example.com', "11", 'Competition A', "3", False)])
+def test_book(patch_club_user,
+              name,
+              points,
+              email,
+              name_comp,
+              numberOfPlaces,
+              login):
+    """
+    Test the book route to ensure it returns the correct template.
+    Also testing if the post is executed if the user is logged in.
+    """
+    with patch_club_user(name, email, points, name_comp,
+                         numberOfPlaces, login):
+        with app.test_client() as client:
+            if login:
+                with client.session_transaction() as session:
+                    session['_user_id'] = 'john@simplylift.co'
+
+        response = client.get('/book/Competition A/Club A')
+
+    msg2 = f"Places available: {numberOfPlaces}"
+    if login:
+        assert response.status_code == 200
+        assert name_comp in response.data.decode('utf-8')
+        assert msg2 in response.data.decode('utf-8')
+    else:
+        expected_url = refacto_return_index()
+        assert response.status_code == 302
+        assert response.location == expected_url
 
 
 if __name__ == '__main__':
