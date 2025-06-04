@@ -100,7 +100,7 @@ def value_validator(value):
         return False
 
 
-def refacto_booking_places(places_required, club, competition):
+def process_booking(places_required, club, competition):
     """
     This function is a placeholder for refactoring the booking logic.
     It should handle the logic of booking places in a more structured way.
@@ -109,10 +109,10 @@ def refacto_booking_places(places_required, club, competition):
         return 'Sorry, you do not have enough points to book this competition'
     elif places_required > 12:
         return 'Sorry, you can not book more than 12 places at once'
+    elif int(competition.get('numberOfPlaces')) < 1:
+        return 'The competition you chose is not available anymore'
     elif places_required > int(competition.get('numberOfPlaces')):
         return 'Sorry, not enough places available'
-    elif places_required == 0:
-        return 'The competition you choosed is not available anymore'
     return None
 
 
@@ -130,12 +130,6 @@ def purchasePlaces():
 
     club = [c for c in clubs if c['name'] == request.form['club']][0]
 
-    # if int(competition['numberOfPlaces']) == 0:
-    #     flash('The competition you choosed is not avaiable anymore')
-    #     return render_template('welcome.html',
-    #                            club=club,
-    #                            competitions=competitions)
-
     if not request.form['places'].isdigit():
         return render_template('booking.html',
                                club=club,
@@ -143,7 +137,7 @@ def purchasePlaces():
                                message="Invalid number of places given.")
     placesRequired = int(request.form['places'])
 
-    problem_booking = refacto_booking_places(placesRequired,
+    problem_booking = process_booking(placesRequired,
                                              club,
                                              competition)
     if problem_booking:

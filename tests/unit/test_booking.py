@@ -1,61 +1,39 @@
-from server import app
-from unittest.mock import patch
-from contextlib import contextmanager
 import sys
 import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from server import value_validator, process_booking
 import pytest
-sys.path.append(os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '../../')))
+
+# Messages as global variables for testing
+msg1 = "Sorry, you do not have enough points to book this competition"
+msg2 = "Sorry, not enough places available"
+msg3 = "Sorry, you can not book more than 12 places at once"
+msg4 = "The competition you chose is not available anymore"
 
 
-@pytest.fixture()
-def patch_club_user():
+@pytest.mark.parametrize("value, response",
+                         [("1", True),
+                          ("0", False),
+                          ("-1", False),
+                          ("abc", False),
+                          ("5.5", False)])
+def test_value_validator(value, response):
     """
-    Fixture to patch Clubs and Competitions.
+    Test the value_validator function to ensure it correctly validates input.
     """
-    @contextmanager
-    def _patch(name, points, email, name_comp, numberOfPlaces, login=False):
-        clubs = [{'name': name, 'points': points, 'email': email}]
-        competitions = [{'name': name_comp, 'numberOfPlaces': numberOfPlaces}]
-        with patch('server.competitions', competitions), \
-             patch('server.clubs', clubs):
-            # with client.session_transaction() as session:
-            #     session['_user_id'] = email
-            yield clubs, competitions
-    return _patch
+    assert value_validator(value) is response
 
 
-# Sepparer le test en 2
-@pytest.mark.parametrize(
-        'name, points, email, name_comp, numberOfPlaces, login',
-        [('Club A', 'clb1@example.com', "10", 'Competition A', "5", True),
-         ('Club b', 'clb2@example.com', "11", 'Competition A', "3", False)])
-def test_book(patch_club_user,
-              name,
-              points,
-              email,
-              name_comp,
-              numberOfPlaces,
-              login):
+@pytest.mark.parametrize("request_plc, points, exist_plc, message",
+                         [(10, {'points': 9}, {'numberOfPlaces':12}, msg1),
+                          (5, {'points': 5}, {'numberOfPlaces': 4}, msg2),
+                          (13, {'points': 14}, {'numberOfPlaces': 13}, msg3),
+                          (1, {'points': 1}, {'numberOfPlaces': 0}, msg4),
+                          (1, {'points': 1}, {'numberOfPlaces': 1}, None)
+                          ])
+def test_process_booking(request_plc, points, exist_plc, message):
     """
-    Test the book route to ensure it returns the correct template.
-    Also testing if the post is executed if the user is logged in.
+    Helper function to process booking and return the expected message.
     """
-    with patch_club_user(name, email, points, name_comp,
-                         numberOfPlaces, login):
-        with app.test_client() as client:
-            if login:
-                with client.session_transaction() as session:
-                    session['_user_id'] = 'john@simplylift.co'
-
-        response = client.get('/book/Competition A/Club A')
-
-    msg2 = f"Places available: {numberOfPlaces}"
-    if login:
-        assert response.status_code == 200
-        assert name_comp in response.data.decode('utf-8')
-        assert msg2 in response.data.decode('utf-8')
-    else:
-        expected_url = "urls_str"
-        assert response.status_code == 302
-        assert response.location == expected_url
+    assert process_booking(request_plc, points, exist_plc) == message
