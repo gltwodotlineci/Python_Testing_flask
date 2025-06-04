@@ -1,6 +1,6 @@
 import json
 from flask import Flask, render_template, request, redirect, flash, url_for
-from flask_login import LoginManager, UserMixin, login_user, login_required
+from flask_login import LoginManager, UserMixin, login_required
 from flask_login import logout_user
 
 
@@ -64,21 +64,16 @@ def showSummary():
         'email']][0]
 
     club_user = ClubUser(club['name'], email, club['points'])
-    login_user(club_user)
+    load_user(club_user)
     return render_template('welcome.html',
                            club=club,
                            competitions=competitions)
 
 
-@login_manager.unauthorized_handler
-def unauthorized_callback():
-    flash('You must be logged in to view that page.')
-    return redirect(url_for('index'))  # Redirect to home instead of login page
-
-
 @app.route('/book/<competition>/<club>')
 @login_required
 def book(competition, club):
+    # Add try except.
     foundClub = [c for c in clubs if c['name'] == club][0]
     foundCompetition = [c for c in competitions if c['name'] == competition][0]
     if foundClub and foundCompetition:
@@ -152,7 +147,7 @@ def purchasePlaces():
 
 
 @app.route('/logout')
-@login_required
+# @login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
