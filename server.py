@@ -1,7 +1,9 @@
 import json
+import uuid
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_login import LoginManager, UserMixin, login_required
 from flask_login import logout_user, login_user
+from support_booking import write_json
 
 
 def loadClubs():
@@ -16,6 +18,12 @@ def loadCompetitions():
         return listOfCompetitions
 
 
+def loadBookings():
+    with open('booking_places.json') as book:
+        listOfBookings = json.load(book)['booking_places']
+        return listOfBookings
+
+
 app = Flask(__name__)
 app.secret_key = 'something_special'
 login_manager = LoginManager()
@@ -23,6 +31,7 @@ login_manager.init_app(app)
 
 competitions = loadCompetitions()
 clubs = loadClubs()
+bookings = loadBookings()
 
 
 class ClubUser(UserMixin):
@@ -33,6 +42,35 @@ class ClubUser(UserMixin):
 
     def get_id(self):
         return self.email
+
+
+class Competition:
+    def __init__(self, name, numberOfPlaces, date):
+        self.name = name
+        self.numberOfPlaces = numberOfPlaces
+        self.date = date
+
+    def get_id(self):
+        return self.name
+
+
+class BookingEvents:
+    def __init__(self, club_id, competition_id, places):
+        self.id = str(uuid.uuid4())
+        self.club_id = club_id
+        self.competition_id = competition_id
+        self.places = places
+
+    def get_id(self):
+        return self.id
+
+    def serialize(self):
+        return {
+            'id': str(self.id),
+            'club_id': self.club_id,
+            'competition_id': self.competition_id,
+            'places': self.places
+        }
 
 
 @login_manager.user_loader
@@ -143,6 +181,9 @@ def purchasePlaces():
     club['points'] = int(club.get('points')) - placesRequired
     new_val_competition = int(competition['numberOfPlaces'])-placesRequired
     competition['numberOfPlaces'] = new_val_competition
+    booking = BookingEvents(club['email'], competition['name'], placesRequired)
+    bookings.append(booking.serialize())
+    write_json('booking_places.json', bookings)
 
     flash('Great-booking complete!')
     return render_template('welcome.html',
