@@ -1,9 +1,9 @@
-import sys
-import os
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from server import value_validator, process_booking
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..')))
 
 # Messages as global variables for testing
 msg1 = "Sorry, you do not have enough points to book this competition"
@@ -26,7 +26,7 @@ def test_value_validator(value, response):
 
 
 @pytest.mark.parametrize("request_plc, points, exist_plc, message",
-                         [(10, {'points': 9}, {'numberOfPlaces':12}, msg1),
+                         [(10, {'points': 9}, {'numberOfPlaces': 12}, msg1),
                           (5, {'points': 5}, {'numberOfPlaces': 4}, msg2),
                           (13, {'points': 14}, {'numberOfPlaces': 13}, msg3),
                           (1, {'points': 1}, {'numberOfPlaces': 0}, msg4),

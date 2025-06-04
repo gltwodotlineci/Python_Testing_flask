@@ -130,16 +130,10 @@ def purchasePlaces():
 
     club = [c for c in clubs if c['name'] == request.form['club']][0]
 
-    if not request.form['places'].isdigit():
-        return render_template('booking.html',
-                               club=club,
-                               competition=competition,
-                               message="Invalid number of places given.")
     placesRequired = int(request.form['places'])
-
     problem_booking = process_booking(placesRequired,
-                                             club,
-                                             competition)
+                                      club,
+                                      competition)
     if problem_booking:
         return render_template('booking.html',
                                club=club,
