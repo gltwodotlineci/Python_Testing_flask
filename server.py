@@ -145,13 +145,29 @@ def process_booking(places_required, club, competition):
     """
     if places_required > int(club.get('points')):
         return 'Sorry, you do not have enough points to book this competition'
-    elif places_required > 12:
-        return 'Sorry, you can not book more than 12 places at once'
     elif int(competition.get('numberOfPlaces')) < 1:
         return 'The competition you chose is not available anymore'
     elif places_required > int(competition.get('numberOfPlaces')):
         return 'Sorry, not enough places available'
+    elif check_booking_limit_club(club.get('email'),
+                                  competition.get('name'),
+                                  bookings, places_required) is False:
+        return "You can not book more than 12 places for this competition"
     return None
+
+
+def check_booking_limit_club(club_id, competition_id,
+                             booking_places, places_required):
+    """
+    Check if the club in total can't reserve more than 12 places
+    for a specific competition.
+    """
+    booked = [b.get('places') for b in booking_places \
+              if b['club_id'] == club_id and \
+              b['competition_id'] == competition_id]
+    if sum(booked) + places_required > 12:
+        return False
+    return True
 
 
 @app.route('/purchasePlaces', methods=['POST'])

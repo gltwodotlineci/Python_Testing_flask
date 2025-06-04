@@ -1,19 +1,13 @@
 {
   "booking_places": [
     {
-      "id": "e4ed0e3d-6b01-4cb2-a882-c10a41feba79",
-      "club_id": "john@simplylift.co",
-      "competition_id": "Fall Classic",
-      "places": 2
-    },
-    {
-      "id": "e5e52d90-b785-4c9d-bd89-37369041b14f",
+      "id": "1e4d6d57-6d33-48b7-9788-e2923b283ba7",
       "club_id": "john@simplylift.co",
       "competition_id": "Spring Festival",
-      "places": 10
+      "places": 12
     },
     {
-      "id": "4bc8456f-7a29-4b9e-b437-ef1ffb449c05",
+      "id": "b3a7b57a-c706-4cd7-ac60-156ef3040fc8",
       "club_id": "john@simplylift.co",
       "competition_id": "Music challange",
       "places": 1
