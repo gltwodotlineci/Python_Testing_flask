@@ -1,4 +1,3 @@
-from server import app
 from flask import url_for
 from bs4 import BeautifulSoup
 from unittest.mock import patch
@@ -8,6 +7,7 @@ import os
 import pytest
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), '../../')))
+from server import app, value_validator
 
 
 @pytest.fixture
@@ -73,6 +73,17 @@ def patch_session():
             yield email, client
 
     return _patch
+
+
+def test_value_validator():
+    """
+    Test the value_validator function to ensure it correctly validates input.
+    """
+    assert value_validator('1') is True
+    assert value_validator('0') is True
+    assert value_validator('-1') is False
+    assert value_validator('abc') is False
+    assert value_validator('5.5') is False
 
 
 @pytest.mark.parametrize("places, points, data_places",

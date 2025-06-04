@@ -1,7 +1,7 @@
 import json
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_login import LoginManager, UserMixin, login_required
-from flask_login import logout_user
+from flask_login import logout_user, login_user
 
 
 def loadClubs():
@@ -64,14 +64,14 @@ def showSummary():
         'email']][0]
 
     club_user = ClubUser(club['name'], email, club['points'])
-    load_user(club_user)
+    login_user(club_user)
     return render_template('welcome.html',
                            club=club,
                            competitions=competitions)
 
 
 @app.route('/book/<competition>/<club>')
-@login_required
+# @login_required
 def book(competition, club):
     # Add try except.
     foundClub = [c for c in clubs if c['name'] == club][0]
@@ -87,6 +87,19 @@ def book(competition, club):
                                competitions=competitions)
 
 
+def value_validator(value):
+    """
+    Validates if the value is a positive integer.
+    """
+    try:
+        value = int(value)
+        if value < 1:
+            return False
+        return True
+    except ValueError:
+        return False
+
+
 def refacto_booking_places(places_required, club, competition):
     """
     This function is a placeholder for refactoring the booking logic.
@@ -98,25 +111,30 @@ def refacto_booking_places(places_required, club, competition):
         return 'Sorry, you can not book more than 12 places at once'
     elif places_required > int(competition.get('numberOfPlaces')):
         return 'Sorry, not enough places available'
-    elif places_required < 1 or not places_required.is_integer():
-        return "Invalid number of places given."
-    else:
-        return None
+    elif places_required == 0:
+        return 'The competition you choosed is not available anymore'
+    return None
 
 
 @app.route('/purchasePlaces', methods=['POST'])
 def purchasePlaces():
-    print("Page BEFORE... 3 ")
+    places_required = request.form['places']
+    if not value_validator(places_required):
+        msg = "Invalid number of places given."
+        return render_template('booking.html',
+                               club=request.form['club'],
+                               competition=request.form['competition'],
+                               message=msg)
     competition = [c for c in competitions if c['name'] == request.form[
         'competition']][0]
-    print("Competition found: ", competition)
 
     club = [c for c in clubs if c['name'] == request.form['club']][0]
-    if int(competition['numberOfPlaces']) == 0:
-        flash('The competition you choosed is not avaiable anymore')
-        return render_template('welcome.html',
-                               club=club,
-                               competitions=competitions)
+
+    # if int(competition['numberOfPlaces']) == 0:
+    #     flash('The competition you choosed is not avaiable anymore')
+    #     return render_template('welcome.html',
+    #                            club=club,
+    #                            competitions=competitions)
 
     if not request.form['places'].isdigit():
         return render_template('booking.html',
@@ -147,7 +165,7 @@ def purchasePlaces():
 
 
 @app.route('/logout')
-# @login_required
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
