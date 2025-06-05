@@ -116,9 +116,6 @@ def showSummary():
 
     club_user = ClubUser(club['name'], email, club['points'])
     login_user(club_user)
-    # return render_template('welcome.html',
-    #                        club=club,
-    #                        competitions=competitions)
     return redirect(url_for('welcome'))
 
 

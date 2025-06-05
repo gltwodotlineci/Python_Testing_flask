@@ -45,12 +45,12 @@ def patch_session():
     return _patch
 
 
-@pytest.mark.parametrize("name, points, email, expected_status",
-                         [("Club A", "30", "wrong_user@example.com", 302),
-                          ("Club B", "15", "user@example.com", 200)
+@pytest.mark.parametrize("name, points, email, redirect_url",
+                         [("Club A", "30", "wrong_user@example.com", "/"),
+                          ("Club B", "15", "user@example.com", "/welcome")
                           ])
 def test_club_login(patch_dt_club, club_email,
-                    name, points, email, expected_status):
+                    name, points, email, redirect_url):
     """
     Test the showSummary route to ensure it handles login correctly.
     """
@@ -58,11 +58,8 @@ def test_club_login(patch_dt_club, club_email,
     with patch_dt_club(name, points, email):
         response = client.post('/showSummary', data=data)
 
-    assert response.status_code == expected_status
-    if response.status_code == 302:
-        assert response.location.endswith('/')
-    else:
-        assert b'Welcome, user@example.com' in response.data
+    assert response.status_code == 302
+    assert response.location.endswith(redirect_url)
 
 
 def test_logout(patch_session):
