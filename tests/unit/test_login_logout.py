@@ -1,11 +1,11 @@
 from unittest.mock import patch
 from contextlib import contextmanager
-from server import app
 import sys
 import os
 import pytest
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), '../../')))
+from server import app
 
 
 @pytest.fixture()

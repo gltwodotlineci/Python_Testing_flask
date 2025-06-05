@@ -162,8 +162,8 @@ def check_booking_limit_club(club_id, competition_id,
     Check if the club in total can't reserve more than 12 places
     for a specific competition.
     """
-    booked = [b.get('places') for b in booking_places \
-              if b['club_id'] == club_id and \
+    booked = [b.get('places') for b in booking_places
+              if b['club_id'] == club_id and
               b['competition_id'] == competition_id]
     if sum(booked) + places_required > 12:
         return False
