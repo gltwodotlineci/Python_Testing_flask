@@ -39,6 +39,7 @@ def patch_session():
 
         with client.session_transaction() as session:
             session['_user_id'] = email
+            session['_fresh'] = True
             yield email, client
 
     return _patch
@@ -69,9 +70,10 @@ def test_logout(patch_session):
     Test the logout route to ensure it redirects to the index page.
     """
     client = app.test_client()
-    club_email = 'expmp1@mail.com'
+    club_email = 'john@simplylift.co'
     with patch_session(club_email, client):
-        response = client.get('/logout')
+        response = client.get('/logout', follow_redirects=True)
 
+    response = client.get('/logout')
     assert response.status_code == 302
-    # assert response.location.endswith('/')
+    assert response.headers['Location'].endswith('/')
