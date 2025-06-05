@@ -109,7 +109,7 @@ def showSummary():
 
 
 @app.route('/book/<competition>/<club>')
-# @login_required
+@login_required
 def book(competition, club):
     # Add try except.
     foundClub = [c for c in clubs if c['name'] == club][0]

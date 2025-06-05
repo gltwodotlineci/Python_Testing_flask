@@ -1,4 +1,3 @@
-from flask import url_for
 from bs4 import BeautifulSoup
 from unittest.mock import patch
 from contextlib import contextmanager
@@ -60,19 +59,19 @@ def patch_dt_club():
     return _patch
 
 
-@pytest.fixture()
-def patch_session():
-    """
-    Fixture to patch the session
-    """
-    @contextmanager
-    def _patch(email, client):
+# @pytest.fixture()
+# def patch_session():
+#     """
+#     Fixture to patch the session
+#     """
+#     @contextmanager
+#     def _patch(email, client):
 
-        with client.session_transaction() as session:
-            session['_user_id'] = email
-            yield email, client
+#         with client.session_transaction() as session:
+#             session['_user_id'] = email
+#             yield email, client
 
-    return _patch
+#     return _patch
 
 
 @pytest.mark.parametrize("places, points, data_places",
@@ -151,14 +150,6 @@ def test_clubs_list(patch_dt_club, name, points, email):
     print("Response text:", resp_text)
     assert msg1 in resp_text
     assert msg2 in resp_text
-
-
-def refacto_return_index():
-    """
-    It will give re response if we redirect to index page.
-    """
-    with app.test_request_context():
-        return url_for('index', _external=True)
 
 
 if __name__ == '__main__':
