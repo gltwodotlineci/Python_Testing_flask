@@ -1,5 +1,6 @@
 from unittest.mock import patch
 from contextlib import contextmanager
+from urllib.parse import urlparse, parse_qs
 import sys
 import os
 import pytest
@@ -62,6 +63,7 @@ def test_club_login(patch_dt_club, club_email,
     assert response.location.endswith(redirect_url)
 
 
+
 def test_logout(patch_session):
     """
     Test the logout route to ensure it redirects to the index page.
@@ -72,5 +74,8 @@ def test_logout(patch_session):
         response = client.get('/logout', follow_redirects=True)
 
     response = client.get('/logout')
+    parsed = urlparse(response.location)
+    qs = parse_qs(parsed.query)
     assert response.status_code == 302
-    assert response.headers['Location'].endswith('/')
+    assert parsed.path == '/'
+    assert qs.get('next') == ['/logout']
