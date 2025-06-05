@@ -1,8 +1,9 @@
 import json
 import uuid
 from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import make_response
 from flask_login import LoginManager, UserMixin, login_required
-from flask_login import logout_user, login_user
+from flask_login import logout_user, login_user, current_user
 from support_booking import write_json
 
 
@@ -28,6 +29,10 @@ app = Flask(__name__)
 app.secret_key = 'something_special'
 login_manager = LoginManager()
 login_manager.init_app(app)
+# Set login view
+login_manager.login_view = 'index'
+# Add session protection
+login_manager.session_protection = "strong"
 
 competitions = loadCompetitions()
 clubs = loadClubs()
@@ -73,6 +78,14 @@ class BookingEvents:
         }
 
 
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+
 @login_manager.user_loader
 def load_user(email):
     clubs = loadClubs()
@@ -103,9 +116,25 @@ def showSummary():
 
     club_user = ClubUser(club['name'], email, club['points'])
     login_user(club_user)
-    return render_template('welcome.html',
-                           club=club,
-                           competitions=competitions)
+    # return render_template('welcome.html',
+    #                        club=club,
+    #                        competitions=competitions)
+    return redirect(url_for('welcome'))
+
+
+@app.route('/welcome')
+@login_required
+def welcome():
+
+    club = {'name': current_user.name,
+            'email': current_user.email,
+            'points': current_user.points}
+    response = make_response(render_template('welcome.html', club=club, competitions=competitions))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+
+    return response
 
 
 @app.route('/book/<competition>/<club>')
@@ -171,6 +200,7 @@ def check_booking_limit_club(club_id, competition_id,
 
 
 @app.route('/purchasePlaces', methods=['POST'])
+@login_required
 def purchasePlaces():
     places_required = request.form['places']
     if not value_validator(places_required):

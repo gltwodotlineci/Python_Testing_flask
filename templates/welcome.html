@@ -33,6 +33,11 @@
         {% endfor %}
     </ul>
     {%endwith%}
-
+<script>
+  // If the page was loaded from cache (like when pressing back), force reload from server
+  if (performance.navigation.type === 2) {
+    location.reload(true);
+  }
+</script>
 </body>
 </html>
