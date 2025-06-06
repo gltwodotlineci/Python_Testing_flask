@@ -78,14 +78,6 @@ class BookingEvents:
         }
 
 
-@app.after_request
-def add_header(response):
-    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
-
-
 @login_manager.user_loader
 def load_user(email):
     clubs = loadClubs()
@@ -126,8 +118,10 @@ def welcome():
     club = {'name': current_user.name,
             'email': current_user.email,
             'points': current_user.points}
-    response = make_response(render_template('welcome.html', club=club, competitions=competitions))
-    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response = make_response(render_template(
+        'welcome.html', club=club, competitions=competitions))
+    response.headers[
+        'Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
 

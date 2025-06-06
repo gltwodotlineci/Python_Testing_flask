@@ -13,7 +13,8 @@ from server import app
 def client_and_data():
     """
     Fixture to create a test client for the Flask app.
-    This allows us to make requests to the app without running a server.
+    Basicli it will allow us to make requests to the app
+    without running a server.
     """
     data0 = {'places': '10',
              'competition': 'Competition A',

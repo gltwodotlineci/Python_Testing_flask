@@ -1,46 +1,5 @@
 {
   "booking_places": [
-    {
-      "id": "1e4d6d57-6d33-48b7-9788-e2923b283ba7",
-      "club_id": "john@simplylift.co",
-      "competition_id": "Spring Festival",
-      "places": 12
-    },
-    {
-      "id": "b3a7b57a-c706-4cd7-ac60-156ef3040fc8",
-      "club_id": "john@simplylift.co",
-      "competition_id": "Music challange",
-      "places": 1
-    },
-    {
-      "id": "7e818f0e-2e2b-4038-947b-8f1b40653dcb",
-      "club_id": "kate@shelifts.co.uk",
-      "competition_id": "Music challange",
-      "places": 1
-    },
-    {
-      "id": "a8f93836-de35-473c-81a5-4b6f86fdb70f",
-      "club_id": "john@simplylift.co",
-      "competition_id": "Fall Classic",
-      "places": 1
-    },
-    {
-      "id": "99fb27c5-e7e2-4703-9676-5915dbbd2fd4",
-      "club_id": "john@simplylift.co",
-      "competition_id": "Music challange",
-      "places": 1
-    },
-    {
-      "id": "b053a230-1a99-4fe3-9b9d-e832fdc431ad",
-      "club_id": "john@simplylift.co",
-      "competition_id": "Fall Classic",
-      "places": 2
-    },
-    {
-      "id": "f5c60cb9-80cb-40e7-b818-02f49d062c16",
-      "club_id": "john@simplylift.co",
-      "competition_id": "Music challange",
-      "places": 1
-    }
+
   ]
 }
