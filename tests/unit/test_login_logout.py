@@ -1,12 +1,8 @@
 from unittest.mock import patch, MagicMock
 from contextlib import contextmanager
 from urllib.parse import urlparse, parse_qs
-import sys
-import os
-import pytest
-sys.path.append(os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '../../')))
 from server import app
+import pytest
 
 
 @pytest.fixture()
@@ -26,10 +22,13 @@ def patch_dt_club():
     Patching clubs data
     """
     @contextmanager
-    def _patch(name, points, email):
+    def _patch(name, points, email, name_comp, date, nb_pl):
         clubs = [{'name': name, 'points': points, 'email': email}]
-        with patch('server.clubs', clubs):
-            yield clubs
+        competitions = [{'name': name_comp,
+                         'date': date, 'numberOfPlaces': nb_pl}]
+        with patch('server.clubs', clubs), \
+             patch('server.competitions', competitions):
+            yield clubs, competitions
     return _patch
 
 
@@ -41,37 +40,22 @@ def client_and_data():
     without running a server.
     """
     club = {'name': 'clb1', 'email': 'admin@irontemple.com', 'points': 4}
-    competitions = [{'name': 'Comp A', "date": "2020-03-27 10:00:00",
-                     'numberOfPlaces': 10}]
+    competions = [{'name': 'Comp A', "date": "2020-03-27 10:00:00",
+                   'numberOfPlaces': 10}]
     app.config['TESTING'] = True
     with app.test_client() as client:
-        yield client, club, competitions
+        yield client, club, competions
 
 
 @pytest.fixture
 def mock_current_user(client_and_data):
-    client, club, _ = client_and_data
+    client, club, competitions = client_and_data
     mock_user = MagicMock()
     mock_user.name = club['name']
     mock_user.email = club['email']
     mock_user.points = club['points']
-    mock_user.is_authenticated = True
     with patch('flask_login.utils._get_user', return_value=mock_user):
-        yield mock_user, client
-
-
-@pytest.fixture()
-def patch_competitions():
-    """
-    Patching competition data.
-    """
-    @contextmanager
-    def _patch():
-        competitions = [{'name': 'Comp A', "date": "2020-03-27 10:00:00",
-                         'numberOfPlaces': 10}]
-        with patch("server.comptitions", competitions):
-            yield competitions
-    return _patch
+        yield mock_user, client, competitions
 
 
 @pytest.fixture()
@@ -89,17 +73,21 @@ def patch_session():
     return _patch
 
 
-@pytest.mark.parametrize("name, points, email, redirect_url",
-                         [("Club A", "30", "wrong_user@example.com", "/"),
-                          ("Club B", "15", "user@example.com", "/welcome")
+@pytest.mark.parametrize("name, points, email,\
+                          redirect_url, name_comp, date, nb_pl",
+                         [("Club A", "30", "wrong_user@example.com", "/",
+                           "Comp1", "date1", 3),
+                          ("Club B", "15", "user@example.com", "/welcome",
+                           "comp2", "date2", 2)
                           ])
 def test_club_login(patch_dt_club, club_email,
-                    name, points, email, redirect_url):
+                    name, points, email, redirect_url,
+                    name_comp, date, nb_pl):
     """
     Test the showSummary route to ensure it handles login correctly.
     """
     client, data = club_email
-    with patch_dt_club(name, points, email):
+    with patch_dt_club(name, points, email, name_comp, date, nb_pl):
         response = client.post('/showSummary', data=data)
 
     assert response.status_code == 302
@@ -107,7 +95,7 @@ def test_club_login(patch_dt_club, club_email,
 
 
 def test_welcome(mock_current_user):
-    mock_user, client = mock_current_user
+    mock_user, client, _ = mock_current_user
 
     response = client.get('/welcome')
     msg1 = f"Welcome, {mock_user.email}"

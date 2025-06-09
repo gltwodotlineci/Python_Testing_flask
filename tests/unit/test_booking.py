@@ -1,11 +1,7 @@
-import pytest
-import sys
-import os
 from contextlib import contextmanager
 from unittest.mock import patch
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..')))
 from server import value_validator, process_booking, check_booking_limit_club
+import pytest
 
 # Messages as global variables for testing
 msg1 = "Sorry, you do not have enough points to book this competition"
