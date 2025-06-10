@@ -1,10 +1,5 @@
 {
   "booking_places": [
-    {
-      "id": "7841bcec-5977-47de-98ba-6c2b4e0cbf39",
-      "club_id": "exmp@oc.fr",
-      "competition_id": "CompA",
-      "places": 2
-    }
+
   ]
 }
