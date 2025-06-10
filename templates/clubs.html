@@ -6,11 +6,25 @@
 </head>
 <body>
     <h2>The club points balance</h2>
-    {% for club in clubs %}
-        <p>
-            <strong>{{ club['name'] }}</strong>: {{ club['points'] }} points.<br>
-            Contact us at: <b>{{ club['email'] }}</b>
-        </p>
-    {% endfor %}
+    <table border="1" cellspacing="0" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Club Name</th>
+                <th>Points</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for club in clubs %}
+                <tr>
+                    <td>{{ club.name }}</td>
+                    <td>{{ club.points }}</td>
+                    <td>{{ club.email }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
 </body>
 </html>
