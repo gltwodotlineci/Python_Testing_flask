@@ -79,9 +79,8 @@ def patch_session():
                           ("Club B", "15", "user@example.com", "/welcome",
                            "comp2", "date2", 2)
                           ])
-def test_club_login(patch_dt_club, club_email,
-                    name, points, email, redirect_url,
-                    name_comp, date, nb_pl):
+def test_club_login(patch_dt_club, club_email, name, points, email,
+                    redirect_url, name_comp, date, nb_pl):
     """
     Test the show_summary route to ensure it handles login correctly.
     """
