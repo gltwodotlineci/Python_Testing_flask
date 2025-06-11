@@ -7,19 +7,19 @@ from flask_login import logout_user, login_user, current_user
 from support_booking import write_json
 
 
-def loadClubs():
+def load_clubs():
     with open('clubs.json') as c:
         listOfClubs = json.load(c)['clubs']
         return listOfClubs
 
 
-def loadCompetitions():
+def load_competitions():
     with open('competitions.json') as comps:
         listOfCompetitions = json.load(comps)['competitions']
         return listOfCompetitions
 
 
-def loadBookings():
+def load_bookings():
     with open('booking_places.json') as book:
         listOfBookings = json.load(book)['booking_places']
         return listOfBookings
@@ -34,9 +34,9 @@ login_manager.login_view = 'index'
 # Add session protection
 login_manager.session_protection = "strong"
 
-competitions = loadCompetitions()
-clubs = loadClubs()
-bookings = loadBookings()
+competitions = load_competitions()
+clubs = load_clubs()
+bookings = load_bookings()
 
 
 class ClubUser(UserMixin):
@@ -80,7 +80,7 @@ class BookingEvents:
 
 @login_manager.user_loader
 def load_user(email):
-    clubs = loadClubs()
+    clubs = load_clubs()
     for club in clubs:
         if club['email'] == email:
             return ClubUser(club['name'], club['email'], club['points'])
@@ -97,8 +97,8 @@ def clubs_list():
     return render_template('clubs.html', clubs=clubs)
 
 
-@app.route('/showSummary', methods=['POST'])
-def showSummary():
+@app.route('/show_summary', methods=['POST'])
+def show_summary():
     email = request.form['email']
     if email not in (x['email'] for x in clubs):
         flash('Email not found, please try again')
@@ -158,7 +158,7 @@ def value_validator(value):
         return False
 
 
-def process_booking(places_required, club, competition):
+def validate_booking(places_required, club, competition):
     """
     This function is a placeholder for refactoring the booking logic.
     It should handle the logic of booking places in a more structured way.
@@ -190,9 +190,9 @@ def check_booking_limit_club(club_id, competition_id,
     return True
 
 
-@app.route('/purchasePlaces', methods=['POST'])
+@app.route('/purchase_places', methods=['POST'])
 @login_required
-def purchasePlaces():
+def purchase_places():
     places_required = request.form['places']
     if not value_validator(places_required):
         msg = "Invalid number of places given."
@@ -206,9 +206,9 @@ def purchasePlaces():
     club = [c for c in clubs if c['name'] == request.form['club']][0]
 
     placesRequired = int(request.form['places'])
-    problem_booking = process_booking(placesRequired,
-                                      club,
-                                      competition)
+    problem_booking = validate_booking(placesRequired,
+                                       club,
+                                       competition)
     if problem_booking:
         return render_template('booking.html',
                                club=club,

@@ -77,17 +77,17 @@ def patch_dt_club():
 
 @pytest.mark.parametrize("places, points, data_places",
                          [(4, 10, None)])
-def test_purchasePlaces_not_enough_places(client_and_data,
+def test_purchase_places_not_enough_places(client_and_data,
                                           patch_competitions_and_clubs,
                                           places,
                                           points,
                                           data_places):
     """
-    Test the purchasePlaces route when there are not enough places available.
+    Test the purchase_places route when there are not enough places available.
     """
     client, data = client_and_data
     with patch_competitions_and_clubs(places, points) as (competitions, clubs):
-        response = client.post('/purchasePlaces', data=data)
+        response = client.post('/purchase_places', data=data)
 
     assert response.status_code == 200
     assert b'Sorry, not enough places available' in response.data
@@ -96,19 +96,19 @@ def test_purchasePlaces_not_enough_places(client_and_data,
 @pytest.mark.parametrize("places, points, data_places",
                          [(5, 10, '0.0'),
                           (5, 10, 'abc')])
-def test_purchasePlaces_value_error(client_and_data,
+def test_purchase_places_value_error(client_and_data,
                                     patch_competitions_and_clubs,
                                     places,
                                     points,
                                     data_places):
     """
-    Test the purchasePlaces route when the input values are invalid.
+    Test the purchase_places route when the input values are invalid.
     """
     client, data = client_and_data
     data['places'] = data_places
 
     with patch_competitions_and_clubs(places, points):
-        response = client.post('/purchasePlaces', data=data)
+        response = client.post('/purchase_places', data=data)
 
     assert response.status_code == 200
     assert b"Invalid number of places given." in response.data
@@ -122,11 +122,11 @@ def test_filled_competitions(client_and_data,
                              points,
                              data_places):
     """
-    Test the purchasePlaces route when the competition is already filled.
+    Test the purchase_places route when the competition is already filled.
     """
     client, data = client_and_data
     with patch_competitions_and_clubs(places, points):
-        response = client.post('/purchasePlaces', data=data)
+        response = client.post('/purchase_places', data=data)
 
     assert response.status_code == 200
     assert b'The competition you choosed is not avaiable anymore' \

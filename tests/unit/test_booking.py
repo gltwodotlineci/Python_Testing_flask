@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from unittest.mock import patch
-from server import value_validator, process_booking, check_booking_limit_club
+from server import value_validator, validate_booking, check_booking_limit_club
 import pytest
 
 # Messages as global variables for testing
@@ -61,7 +61,7 @@ def test_process_booking(request_plc, points, exist_plc, message):
     """
     Helper function to process booking and return the expected message.
     """
-    assert process_booking(request_plc, points, exist_plc) == message
+    assert validate_booking(request_plc, points, exist_plc) == message
 
 
 @pytest.mark.parametrize("club_id, competition_id, booking_places, response",

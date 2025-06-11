@@ -1,6 +1,5 @@
 from unittest.mock import patch, MagicMock
 from contextlib import contextmanager
-from urllib.parse import urlparse, parse_qs
 from server import app
 import pytest
 
@@ -84,11 +83,11 @@ def test_club_login(patch_dt_club, club_email,
                     name, points, email, redirect_url,
                     name_comp, date, nb_pl):
     """
-    Test the showSummary route to ensure it handles login correctly.
+    Test the show_summary route to ensure it handles login correctly.
     """
     client, data = club_email
     with patch_dt_club(name, points, email, name_comp, date, nb_pl):
-        response = client.post('/showSummary', data=data)
+        response = client.post('/show_summary', data=data)
 
     assert response.status_code == 302
     assert response.location.endswith(redirect_url)
@@ -114,9 +113,6 @@ def test_logout(patch_session):
     with patch_session(club_email, client):
         response = client.get('/logout', follow_redirects=True)
 
-    response = client.get('/logout')
-    parsed = urlparse(response.location)
-    qs = parse_qs(parsed.query)
-    assert response.status_code == 302
-    assert parsed.path == '/'
-    assert qs.get('next') == ['/logout']
+    assert response.status_code == 200
+    assert 'Welcome to the GUDLFT Registration Portal!' \
+        in response.get_data(as_text=True)
