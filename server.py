@@ -206,14 +206,14 @@ def purchase_places():
     club = [c for c in clubs if c['name'] == request.form['club']][0]
 
     placesRequired = int(request.form['places'])
-    problem_booking = validate_booking(placesRequired,
+    check_booking = validate_booking(placesRequired,
                                        club,
                                        competition)
-    if problem_booking:
+    if check_booking:
         return render_template('booking.html',
                                club=club,
                                competition=competition,
-                               message=problem_booking)
+                               message=check_booking)
 
     club['points'] = int(club.get('points')) - placesRequired
     new_val_competition = int(competition['numberOfPlaces'])-placesRequired
