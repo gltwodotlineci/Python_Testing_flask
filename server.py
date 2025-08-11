@@ -131,14 +131,14 @@ def welcome():
 @app.route('/book/<competition>/<club>')
 @login_required
 def book(competition, club):
-    # Add try except.
-    foundClub = [c for c in clubs if c['name'] == club][0]
-    foundCompetition = [c for c in competitions if c['name'] == competition][0]
-    if foundClub and foundCompetition:
+    try:
+        foundClub = [c for c in clubs if c['name'] == club][0]
+        foundCompetition = [c for c in competitions if c['name'] ==
+                            competition][0]
         return render_template('booking.html',
                                club=foundClub,
                                competition=foundCompetition)
-    else:
+    except Exception:
         flash("Something went wrong-please try again")
         return render_template('welcome.html',
                                club=club,
@@ -207,8 +207,8 @@ def purchase_places():
 
     placesRequired = int(request.form['places'])
     check_booking = validate_booking(placesRequired,
-                                       club,
-                                       competition)
+                                     club,
+                                     competition)
     if check_booking:
         return render_template('booking.html',
                                club=club,
@@ -226,8 +226,6 @@ def purchase_places():
     return render_template('welcome.html',
                            club=club,
                            competitions=competitions)
-
-# TODO: Add route for points display
 
 
 @app.route('/logout')
