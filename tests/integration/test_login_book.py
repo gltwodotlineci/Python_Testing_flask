@@ -26,9 +26,12 @@ def patch_dt_club():
         clubs = [{'name': name, 'points': points, 'email': email}]
         competitions = [{'name': name_comp,
                          'date': date, 'numberOfPlaces': nb_pl}]
+        # bookings = [{"id": booked_id, "club_id": email,
+        #              "competition_id": name_comp, "places": 3}]
         with patch('server.clubs', clubs), \
-             patch('server.competitions', competitions):
-            yield clubs, competitions
+             patch('server.competitions', competitions), \
+             patch('server.write_json') as mock_save_book:
+            yield clubs, competitions, mock_save_book
     return _patch
 
 
@@ -62,8 +65,8 @@ def test_login_book_place(club_email, patch_dt_club, mock_current_user):
     _, data = club_email
     mock_user, client, _ = mock_current_user
 
-    with patch_dt_club("clb1", "20", "exmp@oc.fr",
-                       "CompA", "2025-07-27 10:00:00", "15"):
+    with patch_dt_club("clb1", "20", "exmp@oc.fr", "CompA",
+                       "2025-07-27 10:00:00", "15"):
         response = client.post('/show_summary', data=data)
         assert response.status_code == 302
         # make the get request of Welcome page
@@ -75,8 +78,8 @@ def test_login_book_place(club_email, patch_dt_club, mock_current_user):
     # Get the booking page
     soup = BeautifulSoup(resp_decode, 'html.parser')
     book_url = soup.find_all('a')[1].get('href')
-    with patch_dt_club("clb1", "20", "exmp@oc.fr",
-                       "CompA", "2025-07-27 10:00:00", "15"):
+    with patch_dt_club("clb1", "20", "exmp@oc.fr", "CompA",
+                       "2025-07-27 10:00:00", "15"):
         resp_booking = client.get(book_url)
     assert resp_booking.status_code == 200
     # Checking get in booking page
@@ -84,7 +87,8 @@ def test_login_book_place(club_email, patch_dt_club, mock_current_user):
 
     # booking:
     with patch_dt_club("clb1", "20", "exmp@oc.fr", "CompA",
-                       "2025-07-27 10:00:00", "15") as (clubs, competitions):
+                       "2025-07-27 10:00:00",
+                       "15") as (clubs, competitions, bookings):
         clb, compet = clubs[0], competitions[0]
         purchase_dt = {'club': clb['name'],
                        'competition': compet['name'], 'places': "2"}
