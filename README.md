@@ -1,5 +1,36 @@
 # gudlift-registration
 
+0. First steps to get and run the app.
+#### Preparing the virtual envirenement.
+```bash
+sudo apt update
+sudo apt install python3-venv
+# Starting the virtual environment
+python3 -m venv env
+source ./env/bin/activate
+```
+
+#### Download repository
+```bash
+git clone https://github.com/gltwodotlineci/Python_Testing_flask.git
+# Or if we have the SSH key in the github account:
+git clone git@github.com:gltwodotlineci/Python_Testing_flask.git
+# Now we can add the dependences:
+# First, let's enter to the root of the app.
+cd Python_Testing_flask/
+python -m pip install -r requirements.txt
+# Or
+python3 -m pip install -r requirements.txt
+```
+
+#### Start the app.
+```
+# Creating an environment variable for Flask
+export FLASK_APP=server.py
+
+flask run
+```
+
 1. Why
 
 
