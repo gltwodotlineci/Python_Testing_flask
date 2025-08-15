@@ -30,7 +30,10 @@ export FLASK_APP=server.py
 
 flask run
 ```
-
+#### Performance test
+```
+locust -f tests/performance/locustfile.py
+```
 1. Why
 
 

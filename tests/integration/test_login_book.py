@@ -26,8 +26,6 @@ def patch_dt_club():
         clubs = [{'name': name, 'points': points, 'email': email}]
         competitions = [{'name': name_comp,
                          'date': date, 'numberOfPlaces': nb_pl}]
-        # bookings = [{"id": booked_id, "club_id": email,
-        #              "competition_id": name_comp, "places": 3}]
         with patch('server.clubs', clubs), \
              patch('server.competitions', competitions), \
              patch('server.write_json') as mock_save_book:
